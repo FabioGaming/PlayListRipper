@@ -1,10 +1,8 @@
 ﻿using System;
 using YoutubeExplode;
-using YoutubeExplode.Playlists;
 using YoutubeExplode.Videos.Streams;
 using System.Threading.Tasks;
 using YoutubeExplode.Converter;
-using System.Threading;
 using System.IO;
 using YoutubeExplode.Common;
 using System.Collections.Generic;
