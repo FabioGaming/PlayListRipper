@@ -19,8 +19,6 @@ namespace ListRipper
         static async Task Main(string[] args)
         {
             Console.Title = "PlayListRipper";
-            Logging.LogSystem("starting PlayListRipper...");
-            Logging.LogSuccess("PLR: ONLINE");
             await MainUIAsync();
 
         }
@@ -38,13 +36,13 @@ namespace ListRipper
             switch (input.ToLower())
             {
                 case "1":
-                    await VideoDownloader();
+                    await VideoDownloader(true);
                     break;
                 case "2":
                     await ListLoader(true);
                     break;
                 case "3":
-                    await AudioDownloader();
+                    await VideoDownloader(false);
                     break;
                 case "4":
                     await ListLoader(false);
@@ -59,58 +57,7 @@ namespace ListRipper
             }
             await MainUIAsync();
         }
-        static async Task AudioDownloader()
-        {
-            string URL;
-            while (true)
-            {
-                Console.Clear();
-                FLSharp.PrintColor("Please enter a Video link.", "yellow");
-                URL = Console.ReadLine();
-                if (URL.StartsWith("http://") || URL.StartsWith("https://"))
-                {
-                    break;
-                }
-            }
-            Logging.LogSystem("Trying to get " + URL + "...");
-            try
-            {
-
-
-                var video = await YTClient.Videos.GetAsync(URL);
-                FLSharp.PrintColor("Video Link: " + URL, "blue");
-                FLSharp.PrintColor("Video Title: " + video.Title, "blue");
-                FLSharp.PrintColor("Video Creator: " + video.Author.ChannelTitle, "blue");
-                FLSharp.PrintColor("Video Duration: " + video.Duration, "blue");
-                Console.WriteLine("");
-                FLSharp.PrintColor("Download? Y / N", "yellow");
-                string choice = Console.ReadLine();
-                switch (choice.ToLower())
-                {
-                    case "y":
-                        await VideoDownloadHandler(URL, false);
-                        break;
-                    case "yes":
-                        await VideoDownloadHandler(URL, false);
-                        break;
-                    case "n":
-                        await MainUIAsync();
-                        break;
-                    case "no":
-                        await MainUIAsync();
-                        break;
-                    default:
-                        await MainUIAsync();
-                        break;
-                }
-            }
-            catch (Exception e)
-            {
-                FLSharp.PrintColor("ERROR.", "red");
-                await Task.Delay(3000);
-                await AudioDownloader();
-            }
-        }
+        
         //Handles Video Downloads
         static async Task VideoDownloadHandler(string URL, bool isVideo)
         {
@@ -139,7 +86,7 @@ namespace ListRipper
             Console.ReadKey();
         }
         //Downloads Video
-        static async Task VideoDownloader()
+        static async Task VideoDownloader(bool isVideo)
         {
             string URL;
             while (true)
@@ -168,10 +115,10 @@ namespace ListRipper
                 switch (choice.ToLower())
                 {
                     case "y":
-                        await VideoDownloadHandler(URL, true);
+                        await VideoDownloadHandler(URL, isVideo);
                         break;
                     case "yes":
-                        await VideoDownloadHandler(URL, true);
+                        await VideoDownloadHandler(URL, isVideo);
                         break;
                     case "n":
                         await MainUIAsync();
@@ -188,7 +135,7 @@ namespace ListRipper
             {
                 FLSharp.PrintColor("ERROR.", "red");
                 await Task.Delay(3000);
-                await VideoDownloader();
+                await VideoDownloader(isVideo);
             }
         }
 
@@ -281,13 +228,7 @@ namespace ListRipper
                             string filename;
                             Regex rgx = new Regex("[^a-zA-Z0-9 -]");
                             filename = rgx.Replace(video.Title, "");
-
-                            var streamManifest = await YTClient.Videos.Streams.GetManifestAsync(video.Id);
-                            var audioStreamInfo = streamManifest.GetAudioStreams().GetWithHighestBitrate();
-                            var streamInfos = new IStreamInfo[] { audioStreamInfo };
-
                             await YTClient.Videos.DownloadAsync(video.Url, path + filename + ".mp3");
-                            //await YTClient.Videos.DownloadAsync(streamInfos, new ConversionRequestBuilder(path + filename + ".mp3").Build());
                         }
                         Logging.LogSuccess("Downloaded: " + video.Title);
                     }
