@@ -123,15 +123,17 @@ namespace ListRipper
             Logging.LogSystem("Starting Download of: " + video.Title);
             if (isVideo)
             {
-                await YTClient.Videos.DownloadAsync(URL, path + video.Title + ".mp4");
+                string filename;
+                Regex rgx = new Regex("[^a-zA-Z0-9 -]");
+                filename = rgx.Replace(video.Title, "");
+                await YTClient.Videos.DownloadAsync(URL, path + filename + ".mp4");
             }
             else
             {
-                var streamManifest = await YTClient.Videos.Streams.GetManifestAsync(video.Id);
-                var audioStreamInfo = streamManifest.GetAudioStreams().GetWithHighestBitrate();
-                var streamInfos = new IStreamInfo[] { audioStreamInfo };
-                await YTClient.Videos.DownloadAsync(streamInfos, new ConversionRequestBuilder(path + video.Title + ".mp3").Build());
-
+                string filename;
+                Regex rgx = new Regex("[^a-zA-Z0-9 -]");
+                filename = rgx.Replace(video.Title, "");
+                await YTClient.Videos.DownloadAsync(URL, path + filename + ".mp3");
             }
             Logging.LogSuccess("Successfully Downloaded: " + video.Title);
             Console.ReadKey();
@@ -236,8 +238,6 @@ namespace ListRipper
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
-                Console.ReadKey();
                 FLSharp.PrintColor("ERROR.", "red");
                 await Task.Delay(3000);
                 await ListLoader(isVideo);
@@ -260,7 +260,7 @@ namespace ListRipper
             foreach(var video in playlist)
             {
 
-                await Task.Delay(250);
+                await Task.Delay(500);
                 Task t = Task.Run(async () =>
                 {
 
@@ -291,7 +291,11 @@ namespace ListRipper
                         }
                         Logging.LogSuccess("Downloaded: " + video.Title);
                     }
-                    catch (Exception e) { Console.WriteLine(e); }
+                    catch (Exception e) 
+                    {
+                        Logging.LogError("Couldn't Download: " + video.Title);
+                    
+                    }
 
 
                 });
@@ -299,6 +303,7 @@ namespace ListRipper
                 
             }
             await Task.WhenAll(tasks.ToArray());
+            Console.WriteLine("");
             Logging.LogSuccess("Downloaded all Videos from: " + playListInfo.Title);
             Console.ReadKey();
 
