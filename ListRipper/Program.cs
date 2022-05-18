@@ -1,6 +1,5 @@
 ﻿using System;
 using YoutubeExplode;
-using YoutubeExplode.Videos.Streams;
 using System.Threading.Tasks;
 using YoutubeExplode.Converter;
 using System.IO;
@@ -27,12 +26,12 @@ namespace ListRipper
 
 
             Console.Clear();
-            FLSharp.PrintColor("1: Download Video (mp4)", "yellow");
+            FLSharp.PrintColor("1: Download Video    (mp4)", "yellow");
             FLSharp.PrintColor("2: Download PlayList (mp4)", "yellow");
-            FLSharp.PrintColor("3: Download Video (mp3)", "yellow");
+            FLSharp.PrintColor("3: Download Video    (mp3)", "yellow");
             FLSharp.PrintColor("4: Download PlayList (mp3)", "yellow");
-            FLSharp.PrintColor("5: Download Channel (mp4)", "yellow");
-            FLSharp.PrintColor("6: Download Channel (mp3)", "yellow");
+            FLSharp.PrintColor("5: Download Channel  (mp4)", "yellow");
+            FLSharp.PrintColor("6: Download Channel  (mp3)", "yellow");
             FLSharp.PrintColor("quit: Exit", "blue");
             string input = Console.ReadLine();
             switch (input.ToLower())
