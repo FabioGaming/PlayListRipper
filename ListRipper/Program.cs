@@ -27,10 +27,12 @@ namespace ListRipper
 
 
             Console.Clear();
-            FLSharp.PrintColor("1: Download Video", "yellow");
-            FLSharp.PrintColor("2: Download PlayList", "yellow");
-            FLSharp.PrintColor("3: Download Video (AUDIO)", "yellow");
-            FLSharp.PrintColor("4: Download PlayList (AUDIO)", "yellow");
+            FLSharp.PrintColor("1: Download Video (MP4)", "yellow");
+            FLSharp.PrintColor("2: Download PlayList (MP4)", "yellow");
+            FLSharp.PrintColor("3: Download Video (MP3)", "yellow");
+            FLSharp.PrintColor("4: Download PlayList (MP3)", "yellow");
+            FLSharp.PrintColor("5: Download Channel (MP4)", "yellow");
+            FLSharp.PrintColor("6: Download Channel (MP3)", "yellow");
             FLSharp.PrintColor("quit: Exit", "blue");
             string input = Console.ReadLine();
             switch (input.ToLower())
@@ -47,6 +49,13 @@ namespace ListRipper
                 case "4":
                     await ListLoader(false);
                     break;
+                case "5":
+                    await ChannelDownloader(true);
+                    break;
+                case "6":
+                    await ChannelDownloader(false);
+                    break;
+                    
                 case "quit":
                     Environment.Exit(0);
                     break;
@@ -131,7 +140,7 @@ namespace ListRipper
                         break;
                 }
             }
-            catch (Exception e)
+            catch
             {
                 FLSharp.PrintColor("ERROR.", "red");
                 await Task.Delay(3000);
@@ -183,13 +192,113 @@ namespace ListRipper
                         break;
                 }
             }
-            catch (Exception e)
+            catch
             {
                 FLSharp.PrintColor("ERROR.", "red");
                 await Task.Delay(3000);
                 await ListLoader(isVideo);
             }
         }
+
+        static async Task ChannelDownloader(bool isVideo)
+        {
+            Console.Clear();
+            FLSharp.PrintColor("Please enter a Channel link", "yellow");
+            string channelURL = Console.ReadLine();
+            FLSharp.PrintColor("Trying to get " + channelURL + "...", "yellow");
+            try
+            {
+                var channel = await YTClient.Channels.GetAsync(channelURL);
+                var channelvids = await YTClient.Channels.GetUploadsAsync(channelURL);
+
+                FLSharp.PrintColor("Channel Name: " + channel.Title, "blue");
+                FLSharp.PrintColor("Channel ID: " + channel.Id, "blue");
+                FLSharp.PrintColor("Video Count: " + channelvids.Count, "blue");
+                Console.WriteLine("");
+                FLSharp.PrintColor("Download? Y / N", "yellow");
+                string confirm = Console.ReadLine();
+
+                switch(confirm.ToLower())
+                {
+                    case "y":
+                        await ChannelDownloadHandler(isVideo, channelURL);
+                        break;
+                    case "yes":
+                        await ChannelDownloadHandler(isVideo, channelURL);
+                        break;
+                    default:
+                        await ChannelDownloader(isVideo);
+                        break;
+
+                }
+
+            }
+            catch 
+            {
+                FLSharp.PrintColor("Error, could not get Channel Information.", "red");
+                await Task.Delay(2000);
+                await ChannelDownloader(isVideo);
+            
+            }
+        }
+        static async Task ChannelDownloadHandler(bool isVideo, string channelURL)
+        {
+            string path = $"C:/Users/{Environment.UserName}/Desktop/PlayListRipper/";
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+            var channel = await YTClient.Channels.GetAsync(channelURL);
+            var channelvids = await YTClient.Channels.GetUploadsAsync(channelURL);
+            Regex rgx = new Regex("[^a-zA-Z0-9 -]");
+            string foldername = rgx.Replace(channel.Title, "");
+            path = $"C:/Users/{Environment.UserName}/Desktop/PlayListRipper/{foldername}/";
+            Directory.CreateDirectory(path);
+            foreach (var video in channelvids)
+            {
+
+                await Task.Delay(500);
+                Task t = Task.Run(async () =>
+                {
+
+                    try
+                    {
+                        Logging.LogSystem("Downloading: " + video.Title);
+                        if (isVideo)
+                        {
+                            string filename;
+                            Regex rgx = new Regex("[^a-zA-Z0-9 -]");
+                            filename = rgx.Replace(video.Title, "");
+                            await YTClient.Videos.DownloadAsync(video.Url, path + filename + ".mp4");
+
+                        }
+                        else
+                        {
+
+                            string filename;
+                            Regex rgx = new Regex("[^a-zA-Z0-9 -]");
+                            filename = rgx.Replace(video.Title, "");
+                            await YTClient.Videos.DownloadAsync(video.Url, path + filename + ".mp3");
+                        }
+                        Logging.LogSuccess("Downloaded: " + video.Title);
+                    }
+                    catch
+                    {
+                        Logging.LogError("Couldn't Download: " + video.Title);
+
+                    }
+
+
+                });
+                tasks.Add(t);
+
+            }
+            await Task.WhenAll(tasks.ToArray());
+            tasks.Clear();
+            Console.WriteLine("");
+            Logging.LogSuccess("Downloaded all Videos from: " + channel.Title);
+            Console.ReadKey();
+        } 
 
         static async Task PlayListDownloader(string URL, bool isVideoStream)
         {
@@ -232,7 +341,7 @@ namespace ListRipper
                         }
                         Logging.LogSuccess("Downloaded: " + video.Title);
                     }
-                    catch (Exception e) 
+                    catch 
                     {
                         Logging.LogError("Couldn't Download: " + video.Title);
                     
@@ -244,6 +353,7 @@ namespace ListRipper
                 
             }
             await Task.WhenAll(tasks.ToArray());
+            tasks.Clear();
             Console.WriteLine("");
             Logging.LogSuccess("Downloaded all Videos from: " + playListInfo.Title);
             Console.ReadKey();
