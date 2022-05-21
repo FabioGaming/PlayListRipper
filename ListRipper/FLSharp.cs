@@ -1,9 +1,4 @@
 ﻿using System;
-using System.IO;
-using System.Reflection;
-using System.Diagnostics;
-using System.Net;
-using System.Net.NetworkInformation;
 
 namespace ListRipper
 {
@@ -89,6 +84,10 @@ namespace ListRipper
 
             Console.WriteLine(message);
             Console.ResetColor();
+        }
+        public static string GetDateTime()
+        {
+            return DateTime.Now.ToString();
         }
 
     }

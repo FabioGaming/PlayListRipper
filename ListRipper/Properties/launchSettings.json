@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ListRipper": {
+      "commandName": "Project",
+      "sqlDebugging": false
+    }
+  }
+}

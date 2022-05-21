@@ -1,12 +1,12 @@
 ﻿using System;
 using YoutubeExplode;
-using YoutubeExplode.Videos.Streams;
 using System.Threading.Tasks;
 using YoutubeExplode.Converter;
 using System.IO;
 using YoutubeExplode.Common;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Security.Principal;
 
 namespace ListRipper
 {
@@ -19,7 +19,14 @@ namespace ListRipper
         static async Task Main(string[] args)
         {
             Console.Title = "PlayListRipper";
-            await MainUIAsync();
+
+            
+
+            var target = Environment.GetEnvironmentVariable("PATH");
+            if(!target.ToLower().Contains("ffmpeg")) {
+                await FFMPEGManager.setupFFMPEG();
+            }
+                await MainUIAsync();
 
         }
         static async Task MainUIAsync()
@@ -27,6 +34,13 @@ namespace ListRipper
 
 
             Console.Clear();
+            WindowsIdentity identity = WindowsIdentity.GetCurrent();
+            WindowsPrincipal principal = new WindowsPrincipal(identity);
+            if (!principal.IsInRole(WindowsBuiltInRole.Administrator))
+            {
+                FLSharp.PrintColor("Please note that this Program needs admin permissions to Check if ffmpeg is installed properly.", "red");
+                FLSharp.PrintColor("Please run this Program as Administrator.", "red");
+            }
             FLSharp.PrintColor("1: Download Video", "yellow");
             FLSharp.PrintColor("2: Download PlayList", "yellow");
             FLSharp.PrintColor("3: Download Video (AUDIO)", "yellow");
