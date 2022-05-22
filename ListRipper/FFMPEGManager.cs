@@ -125,7 +125,7 @@ namespace ListRipper
 
             for (int i = 0; i != e.ProgressPercentage; i++) {
                 progress = progress + "=";
-                progressmessage = $"[{progress}".PadRight(100) + "]";
+                progressmessage = $"[{progress}".PadRight(99) + "]";
 
             }
             Console.Write("\r{0}", $"Downloading: {e.ProgressPercentage}% | {progressmessage}");
