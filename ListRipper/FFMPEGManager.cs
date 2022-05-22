@@ -103,9 +103,8 @@ namespace ListRipper
                 Environment.SetEnvironmentVariable(name, newValues, scope);
                 Logging.LogSuccess("Added ffmpeg.");
                 
-            } catch(Exception e)
+            } catch
             {
-                Console.WriteLine(e);
                 Logging.LogError("Something went wrong.");
                 Thread.Sleep(3000);
                 return Task.CompletedTask;
