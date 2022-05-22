@@ -13,6 +13,7 @@ PlayListRipper currently only runs on Windows, a linux version will follow soon.
 # IMPORTANT
 Since this project is made using [YouTubeExplode.Converter](https://www.nuget.org/packages/YoutubeExplode.Converter) you will **need** [FFMPEG](https://ffmpeg.org) which can be downloaded [HERE](https://ffbinaries.com/downloads)
 If you're unsure if you have `FFPMEG` installed, you can press `Win + R` and type `cmd`, inside of the command prompt you can try to type `ffmpeg`.
+If you are using `Version 1.2` or above, you no longer need to download and install `FFMPEG`, you can run the program as administrator, and it will automatically check if ffmpeg is installed, and will ask the user if they want `PlayListRipper` to download and set it up for them.
 
 ### Example usage
 ![image](https://user-images.githubusercontent.com/61352968/168492164-b94594c9-c6fa-4fcd-9fec-cf0984cda6fa.png)
