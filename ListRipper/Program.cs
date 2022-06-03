@@ -41,10 +41,12 @@ namespace ListRipper
                 FLSharp.PrintColor("Please note that this Program needs admin permissions to Check if ffmpeg is installed properly.", "red");
                 FLSharp.PrintColor("Please run this Program as Administrator.", "red");
             }
-            FLSharp.PrintColor("1: Download Video", "yellow");
-            FLSharp.PrintColor("2: Download PlayList", "yellow");
-            FLSharp.PrintColor("3: Download Video (AUDIO)", "yellow");
-            FLSharp.PrintColor("4: Download PlayList (AUDIO)", "yellow");
+            FLSharp.PrintColor("1: Download Video    (mp4)", "yellow");
+            FLSharp.PrintColor("2: Download PlayList (mp4)", "yellow");
+            FLSharp.PrintColor("3: Download Video    (mp3)", "yellow");
+            FLSharp.PrintColor("4: Download PlayList (mp4)", "yellow");
+            FLSharp.PrintColor("5: Download Channel  (mp3)", "yellow");
+            FLSharp.PrintColor("6: Download Channel  (mp4)", "yellow");
             FLSharp.PrintColor("quit: Exit", "blue");
             string input = Console.ReadLine();
             switch (input.ToLower())
@@ -60,6 +62,12 @@ namespace ListRipper
                     break;
                 case "4":
                     await ListLoader(false);
+                    break;
+                case "5":
+                    await ChannelDownloader(false);
+                    break;
+                case "6":
+                    await ChannelDownloader(true);
                     break;
                 case "quit":
                     Environment.Exit(0);
@@ -153,6 +161,114 @@ namespace ListRipper
             }
         }
 
+        //Handles channel Downloads
+        static async Task ChannelDownloader(bool isVideo)
+        {
+            string URL;
+            while (true)
+            {
+                Console.Clear();
+                FLSharp.PrintColor("Please enter a Channel link.", "yellow");
+                URL = Console.ReadLine();
+                if (URL.StartsWith("http://") || URL.StartsWith("https://"))
+                {
+                    break;
+                }
+            }
+            Logging.LogSystem("Trying to get " + URL + "...");
+            try
+            {
+
+
+                var channel = await YTClient.Channels.GetAsync(URL);
+                var channelvideos = await YTClient.Channels.GetUploadsAsync(URL);
+                FLSharp.PrintColor("Channel Link: " + URL, "blue");
+                FLSharp.PrintColor("Channel Name: " + channel.Title, "blue");
+                FLSharp.PrintColor("Channel ID: " + channel.Id, "blue");
+                FLSharp.PrintColor("Channel Videos: " + channelvideos.Count, "blue");
+                Console.WriteLine("");
+                FLSharp.PrintColor("Download? Y / N", "yellow");
+                string choice = Console.ReadLine();
+                switch (choice.ToLower())
+                {
+                    case "y":
+                        break;
+                    case "yes":
+                        break;
+                    case "n":
+                        await MainUIAsync();
+                        break;
+                    case "no":
+                        await MainUIAsync();
+                        break;
+                    default:
+                        await MainUIAsync();
+                        break;
+                }
+                string path = $"C:/Users/{Environment.UserName}/Desktop/PlayListRipper/";
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+                Regex rgx = new Regex("[^a-zA-Z0-9 -]");
+                string foldername = rgx.Replace(channel.Title, "");
+                path = $"C:/Users/{Environment.UserName}/Desktop/PlayListRipper/{foldername}/";
+                Directory.CreateDirectory(path);
+                foreach (var video in channelvideos)
+                {
+
+                    await Task.Delay(500);
+                    Task t = Task.Run(async () =>
+                    {
+
+                        try
+                        {
+                            Logging.LogSystem("Downloading: " + video.Title);
+                            if (isVideo)
+                            {
+                                string filename;
+                                Regex rgx = new Regex("[^a-zA-Z0-9 -]");
+                                filename = rgx.Replace(video.Title, "");
+                                await YTClient.Videos.DownloadAsync(video.Url, path + filename + ".mp4");
+
+                            }
+                            else
+                            {
+
+                                string filename;
+                                Regex rgx = new Regex("[^a-zA-Z0-9 -]");
+                                filename = rgx.Replace(video.Title, "");
+                                await YTClient.Videos.DownloadAsync(video.Url, path + filename + ".mp3");
+                            }
+                            Logging.LogSuccess("Downloaded: " + video.Title);
+                        }
+                        catch (Exception e)
+                        {
+                            Logging.LogError("Couldn't Download: " + video.Title);
+
+                        }
+
+
+                    });
+                    tasks.Add(t);
+
+                }
+                await Task.WhenAll(tasks.ToArray());
+                Console.WriteLine("");
+                Logging.LogSuccess("Downloaded all Videos from: " + channel.Title);
+                Console.ReadKey();
+
+            }
+            catch (Exception e)
+            {
+                FLSharp.PrintColor("ERROR.", "red");
+                await Task.Delay(3000);
+                await ChannelDownloader(isVideo);
+            }
+
+        }
+
+
         static async Task ListLoader(bool isVideo)
         {
             string URL;
@@ -203,6 +319,7 @@ namespace ListRipper
                 await Task.Delay(3000);
                 await ListLoader(isVideo);
             }
+
         }
 
         static async Task PlayListDownloader(string URL, bool isVideoStream)
