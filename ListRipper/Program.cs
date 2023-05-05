@@ -245,6 +245,7 @@ namespace ListRipper
                         catch (Exception e)
                         {
                             Logging.LogError("Couldn't Download: " + video.Title);
+                            
 
                         }
 
@@ -366,7 +367,8 @@ namespace ListRipper
                     catch (Exception e) 
                     {
                         Logging.LogError("Couldn't Download: " + video.Title);
-                    
+                        Console.WriteLine(e);
+
                     }
 
 
